@@ -13,9 +13,83 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[]
+}
+
+model Collection {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[]
+}
+
 model Product {
-  id          Int    @id @default(autoincrement())
-  name        String
-  description String
-  price       Int
+  id            Int            @id @default(autoincrement())
+  name          String
+  description   String
+  price         Int
+  category_id   Int
+  collection_id Int?
+  collection    Collection?    @relation(fields: [collection_id], references: [id])
+  category      Category       @relation(fields: [category_id], references: [id])
+  images        Image[]
+  product_sizes Product_Size[]
+}
+
+model Image {
+  product_id Int
+  url        String
+  type       Type
+  product    Product @relation(fields: [product_id], references: [id])
+
+  @@unique([product_id, url, type])
+}
+
+model Product_Size {
+  id         Int     @id @default(autoincrement())
+  product_id Int
+  size       Size
+  count      Int
+  product    Product @relation(fields: [product_id], references: [id])
+  carts      Cart[]
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String
+  password String
+  role     Role   @default(USER)
+  carts    Cart[]
+}
+
+model Cart {
+  user_id         Int
+  product_size_id Int
+  count           Int
+  user            User         @relation(fields: [user_id], references: [id])
+  product_size    Product_Size @relation(fields: [product_size_id], references: [id])
+
+  @@unique([user_id, product_size_id])
+}
+
+enum Size {
+  XS
+  S
+  M
+  L
+  XL
+  XXL
+  XXXL
+}
+
+enum Type {
+  SMALL
+  BIG
+}
+
+enum Role {
+  USER
+  ADMIN
 }
